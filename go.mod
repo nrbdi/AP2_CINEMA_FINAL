@@ -1,3 +1,0 @@
-module AP2_CINEMA_FINAL
-
-go 1.25
