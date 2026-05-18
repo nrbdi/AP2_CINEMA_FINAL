@@ -74,7 +74,7 @@ func (uc *AuthUsecase) Register(ctx context.Context, email, password, fullName, 
 		return nil, err
 	}
 
-	
+
 	go uc.emailSender.SendWelcome(email, fullName)
 
 	return user, nil
@@ -169,7 +169,7 @@ func (uc *AuthUsecase) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 }
 
 func (uc *AuthUsecase) generateTokenPair(ctx context.Context, user *domain.User) (*domain.TokenPair, error) {
-	// Access token
+	
 	now := time.Now()
 	accessClaims := jwt.MapClaims{
 		"sub":  user.ID.String(),
@@ -182,7 +182,7 @@ func (uc *AuthUsecase) generateTokenPair(ctx context.Context, user *domain.User)
 		return nil, err
 	}
 
-	// Refresh token (random UUID stored in Redis)
+	
 	refreshToken := uuid.New().String() + strconv.FormatInt(now.UnixNano(), 36)
 	if err := uc.tokenCache.StoreRefreshToken(ctx, user.ID.String(), refreshToken, uc.refreshTTL); err != nil {
 		return nil, err

@@ -45,7 +45,7 @@ type Claims struct {
 	Exp    int64
 }
 
-
+// Repository interfaces
 type UserRepository interface {
 	Create(ctx context.Context, u *User) error
 	GetByID(ctx context.Context, id uuid.UUID) (*User, error)

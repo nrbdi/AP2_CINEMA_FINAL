@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+
 type mockUserRepo struct {
 	users map[uuid.UUID]*domain.User
 }

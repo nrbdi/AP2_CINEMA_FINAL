@@ -1,0 +1,136 @@
+syntax = "proto3";
+package movie;
+option go_package = "cinema/proto/movie";
+
+import "google/protobuf/timestamp.proto";
+
+service MovieService {
+  rpc CreateMovie(CreateMovieRequest) returns (MovieResponse);
+  rpc GetMovie(GetMovieRequest) returns (MovieResponse);
+  rpc ListMovies(ListMoviesRequest) returns (ListMoviesResponse);
+  rpc UpdateMovie(UpdateMovieRequest) returns (MovieResponse);
+  rpc DeleteMovie(DeleteMovieRequest) returns (DeleteMovieResponse);
+
+  rpc CreateHall(CreateHallRequest) returns (HallResponse);
+  rpc GetHallSeatMap(GetHallRequest) returns (SeatMapResponse);
+
+  rpc CreateShowtime(CreateShowtimeRequest) returns (ShowtimeResponse);
+  rpc ListShowtimes(ListShowtimesRequest) returns (ListShowtimesResponse);
+  rpc GetAvailableSeats(GetAvailableSeatsRequest) returns (AvailableSeatsResponse);
+
+  rpc CreateBooking(CreateBookingRequest) returns (BookingResponse);
+  rpc GetBooking(GetBookingRequest) returns (BookingResponse);
+  rpc ListUserBookings(ListUserBookingsRequest) returns (ListBookingsResponse);
+  rpc CancelBooking(CancelBookingRequest) returns (BookingResponse);
+}
+
+// ── Movie ────────────────────────────────────────────────
+message Movie {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 duration_min = 4;
+  string genre = 5;
+  string poster_url = 6;
+  string release_date = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message CreateMovieRequest {
+  string title = 1;
+  string description = 2;
+  int32 duration_min = 3;
+  string genre = 4;
+  string poster_url = 5;
+  string release_date = 6;
+}
+
+message GetMovieRequest { string id = 1; }
+message UpdateMovieRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int32 duration_min = 4;
+  string genre = 5;
+  string poster_url = 6;
+}
+message DeleteMovieRequest { string id = 1; }
+message DeleteMovieResponse { bool success = 1; }
+message MovieResponse { Movie movie = 1; }
+message ListMoviesRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string genre = 3;
+}
+message ListMoviesResponse {
+  repeated Movie movies = 1;
+  int32 total = 2;
+}
+
+// ── Hall & Seat ──────────────────────────────────────────
+message Hall {
+  string id = 1;
+  string name = 2;
+  int32 total_seats = 3;
+}
+message Seat {
+  string id = 1;
+  string hall_id = 2;
+  int32 row_number = 3;
+  int32 seat_number = 4;
+  string seat_type = 5;
+}
+message CreateHallRequest {
+  string name = 1;
+  int32 rows = 2;
+  int32 seats_per_row = 3;
+}
+message GetHallRequest { string hall_id = 1; }
+message HallResponse { Hall hall = 1; }
+message SeatMapResponse { repeated Seat seats = 1; }
+
+// ── Showtime ─────────────────────────────────────────────
+message Showtime {
+  string id = 1;
+  string movie_id = 2;
+  string hall_id = 3;
+  string start_time = 4;
+  string end_time = 5;
+  double price = 6;
+}
+message CreateShowtimeRequest {
+  string movie_id = 1;
+  string hall_id = 2;
+  string start_time = 3;
+  string end_time = 4;
+  double price = 5;
+}
+message ShowtimeResponse { Showtime showtime = 1; }
+message ListShowtimesRequest {
+  string movie_id = 1;
+  string date = 2;
+}
+message ListShowtimesResponse { repeated Showtime showtimes = 1; }
+message GetAvailableSeatsRequest { string showtime_id = 1; }
+message AvailableSeatsResponse { repeated Seat seats = 1; }
+
+// ── Booking ──────────────────────────────────────────────
+message Booking {
+  string id = 1;
+  string user_id = 2;
+  string showtime_id = 3;
+  string status = 4;
+  repeated string seat_ids = 5;
+  double total_price = 6;
+  google.protobuf.Timestamp booked_at = 7;
+}
+message CreateBookingRequest {
+  string user_id = 1;
+  string showtime_id = 2;
+  repeated string seat_ids = 3;
+}
+message GetBookingRequest { string booking_id = 1; }
+message ListUserBookingsRequest { string user_id = 1; }
+message CancelBookingRequest { string booking_id = 1; string user_id = 2; }
+message BookingResponse { Booking booking = 1; }
+message ListBookingsResponse { repeated Booking bookings = 1; }

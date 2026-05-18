@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS booking_seats;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS showtimes;
+DROP TABLE IF EXISTS seats;
+DROP TABLE IF EXISTS halls;
+DROP TABLE IF EXISTS movies;
+DROP TYPE IF EXISTS booking_status_enum;
+DROP TYPE IF EXISTS seat_type_enum;

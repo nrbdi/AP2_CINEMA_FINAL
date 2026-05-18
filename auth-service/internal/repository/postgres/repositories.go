@@ -1,4 +1,4 @@
-package repo
+package postgres
 
 import (
 	"context"
@@ -60,6 +60,7 @@ func (r *UserRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+// ── Token Cache (Redis) ──────────────────────────────────
 type TokenCacheRedis struct{ client *redis.Client }
 
 func NewTokenCache(client *redis.Client) *TokenCacheRedis {

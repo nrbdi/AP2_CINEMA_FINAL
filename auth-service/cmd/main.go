@@ -7,70 +7,62 @@ import (
 	"net"
 	"os"
 
+	grpcDelivery "cinema/auth-service/internal/delivery/grpc"
 	emailPkg "cinema/auth-service/internal/pkg/email"
-	"cinema/auth-service/internal/delivery/grpc"
-	repoPg "cinema/auth-service/internal/repository"
+	repoPg "cinema/auth-service/internal/repository/postgres"
 	"cinema/auth-service/internal/usecase"
-	pb "cinema/auth-service/proto/auth"
+	pb "cinema/proto/auth"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	googleGRPC "google.golang.org/grpc"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
 	ctx := context.Background()
 
-	dbURL := os.Getenv("DB_URL")
-	if dbURL == "" {
-		dbURL = "postgres://auth_user:auth_pass@localhost:5433/cinema_auth?sslmode=disable"
-	}
-
+	dbURL := getEnv("DB_URL", "postgres://auth_user:auth_pass@localhost:5433/cinema_auth?sslmode=disable")
 	pool, err := pgxpool.New(ctx, dbURL)
 	if err != nil {
-		log.Fatalf("failed to connect postgres: %v", err)
+		log.Fatalf("postgres connect failed: %v", err)
 	}
 	defer pool.Close()
+	log.Println("connected to postgres")
 
 	m, err := migrate.New("file://migrations", dbURL)
 	if err != nil {
-		log.Fatalf("migration init failed: %v", err)
+		log.Fatalf("migration init: %v", err)
 	}
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("migration failed: %v", err)
+		log.Fatalf("migration: %v", err)
 	}
 	log.Println("migrations applied")
 
-	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		redisURL = "localhost:6380"
-	}
+	redisURL := getEnv("REDIS_URL", "localhost:6380")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		log.Printf("redis warning: %v", err)
 	}
+	log.Println("connected to redis")
 
-	userRepo   := repoPg.NewUserRepo(pool)
-	tokenCache := repoPg.NewTokenCache(rdb)
+	userRepo    := repoPg.NewUserRepo(pool)
+	tokenCache  := repoPg.NewTokenCache(rdb)
 	emailSender := emailPkg.NewSMTPSender()
 
 	uc      := usecase.NewAuthUsecase(userRepo, tokenCache, emailSender)
-	handler := grpc.NewAuthHandler(uc)
+	handler := grpcDelivery.NewAuthHandler(uc)
 
-	port := os.Getenv("GRPC_PORT")
-	if port == "" {
-		port = "50052"
-	}
+	port := getEnv("GRPC_PORT", "50052")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("listen failed: %v", err)
 	}
 
-	srv := googleGRPC.NewServer()
+	srv := grpc.NewServer()
 	pb.RegisterAuthServiceServer(srv, handler)
 	reflection.Register(srv)
 
@@ -78,4 +70,11 @@ func main() {
 	if err := srv.Serve(lis); err != nil {
 		log.Fatalf("serve failed: %v", err)
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }

@@ -5,7 +5,7 @@ import (
 
 	"cinema/auth-service/internal/domain"
 	"cinema/auth-service/internal/usecase"
-	pb "cinema/auth-service/proto/auth"
+	pb "cinema/proto/auth"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
