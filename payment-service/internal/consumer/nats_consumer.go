@@ -68,16 +68,16 @@ func (c *NATSConsumer) handleBookingConfirmed(event domain.BookingConfirmedEvent
 
 	log.Printf("payment %s created for booking %s amount=%.2f", payment.ID, event.BookingID, payment.Amount)
 
-	
+	// Send email receipt (best-effort — does not block payment success)
 	seatLabels := make([]string, len(event.SeatIDs))
 	for i, id := range event.SeatIDs {
-		seatLabels[i] = id[:8] 
+		seatLabels[i] = id[:8] // abbreviated seat ID as label (replace with real labels in production)
 	}
 	go func() {
 		if err := c.emailSender.SendPaymentReceipt(
-			"user@example.com", 
+			"user@example.com", // In production fetch from auth-service
 			"Customer",
-			"Movie Title",
+			"Movie Title", // In production fetch from movie-service
 			event.ShowtimeID,
 			seatLabels,
 			event.TotalPrice,

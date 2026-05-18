@@ -5,7 +5,7 @@ import (
 
 	"cinema/payment-service/internal/domain"
 	"cinema/payment-service/internal/usecase"
-	pb "cinema/payment-service/proto/payment"
+	pb "cinema/proto/payment"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

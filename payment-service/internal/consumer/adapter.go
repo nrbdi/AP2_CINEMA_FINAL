@@ -1,5 +1,6 @@
 package consumer
 
+// emailAdapter wraps the concrete SMTP sender and satisfies domain.EmailSender
 type emailAdapter struct {
 	sender interface {
 		SendPaymentReceipt(toEmail, toName, movieTitle, showtime string, seats []string, amount float64) error

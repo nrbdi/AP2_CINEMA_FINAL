@@ -1,6 +1,6 @@
 syntax = "proto3";
 package payment;
-option go_package = "cinema/proto/payment";
+option go_package = "cinema/payment-service/proto/payment";
 
 service PaymentService {
   rpc CreatePayment(CreatePaymentRequest) returns (PaymentResponse);
